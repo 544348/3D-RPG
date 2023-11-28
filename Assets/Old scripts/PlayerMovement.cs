@@ -9,6 +9,7 @@ public class PlayerMovement : MonoBehaviour
 {
 
     public float speed;
+    private float baseSpeed;
     private Rigidbody myRigidbody;
     private Vector3 change;
     private Animator animator;
@@ -24,8 +25,13 @@ public class PlayerMovement : MonoBehaviour
     public float jumpForce;
     private float rotationY;
     public float sensitivity;
-    private float baseSpeed;
-
+    [Header("ropeSwing")]
+    private GameObject ropeInUse;
+    private float swingPower;
+    private bool isSwinging;
+    [Header("Respawning")]
+    public GameObject respawnPoint;
+    public GameObject killPlane;
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -39,6 +45,23 @@ public class PlayerMovement : MonoBehaviour
        // shop.SetActive(false);
     }
 
+    private void RopeSwing(GameObject Rope)
+    {
+        gameObject.transform.parent = Rope.transform.parent;
+        Debug.Log("RopeSwing");
+        myRigidbody.useGravity = false;
+        myRigidbody.velocity = Vector3.zero;
+        isSwinging = true;
+        ropeInUse = Rope.transform.parent.gameObject.transform.parent.gameObject;
+    }
+    private void DetachRope()
+    {
+        myRigidbody.useGravity = true;
+        gameObject.transform.parent = null;
+        gameObject.transform.eulerAngles = Vector3.zero;
+        ropeInUse.transform.eulerAngles= Vector3.zero;
+        swingPower = 1;
+    }
     private void walk()
     {
         speed = baseSpeed;
@@ -46,7 +69,10 @@ public class PlayerMovement : MonoBehaviour
 
     private void sprint()
     {
-        speed = speed * 2;
+        if(grounded == true)
+        {
+            speed = speed * 2;
+        }
     }
     private void OnCollisionEnter(Collision collision)
     {
@@ -59,6 +85,17 @@ public class PlayerMovement : MonoBehaviour
         if(collision.gameObject.tag == "shopkeeper")
         {
             shop.SetActive(true);
+        }
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.gameObject.tag == ("Rope"))
+        {
+            RopeSwing(other.gameObject);
+        }
+        if(other.gameObject.tag == ("killPlane"))
+        {
+            gameObject.transform.position = respawnPoint.transform.position;
         }
     }
     void groundCheck()
@@ -85,10 +122,13 @@ public class PlayerMovement : MonoBehaviour
         change = Vector3.zero;
         change.x = Input.GetAxisRaw("Horizontal") * speed;
         change.y = Input.GetAxisRaw("Vertical") * speed;
-        UpdateAnimationAndMove();
-        rotationY = Input.GetAxisRaw("Mouse X")* sensitivity;
-        Quaternion DeltaRotationY = Quaternion.Euler(transform.rotation.x, rotationY, transform.rotation.z);
-        myRigidbody.MoveRotation(myRigidbody.rotation * DeltaRotationY);
+        if (!isSwinging)
+        {
+            UpdateAnimationAndMove();
+            rotationY = Input.GetAxisRaw("Mouse X") * sensitivity;
+            Quaternion DeltaRotationY = Quaternion.Euler(transform.rotation.x, rotationY, transform.rotation.z);
+            myRigidbody.MoveRotation(myRigidbody.rotation * DeltaRotationY);
+        }
     }
 
     void resetDrag()
@@ -108,6 +148,10 @@ public class PlayerMovement : MonoBehaviour
         {
             myRigidbody.drag = 5;
         }
+        else if(grounded==false)
+        {
+            speed = baseSpeed / 2;
+        }
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
             sprint();
@@ -115,6 +159,25 @@ public class PlayerMovement : MonoBehaviour
         else if(Input.GetKeyUp(KeyCode.LeftShift)) 
         {
             walk(); 
+        }
+        if(isSwinging == true)
+        {
+            Vector3 SwingingDirection = new Vector3(change.y , 0 , change.x);
+            Debug.Log("Swinging direction =" + SwingingDirection);
+            ropeInUse.transform.eulerAngles = SwingingDirection * swingPower;
+            if(Input.GetKeyDown(KeyCode.Space))
+            {
+                DetachRope();
+                isSwinging = false;
+            }
+            if(Input.GetKeyDown(KeyCode.W) ||Input.GetKeyDown(KeyCode.S) ||Input.GetKeyDown(KeyCode.A) ||Input.GetKeyDown(KeyCode.D))
+            {
+                if(swingPower <= 1.5)
+                {
+                    swingPower = swingPower + 0.2f;
+                }
+                Debug.Log("swingPower Value is "+ swingPower);
+            }
         }
     }
     void UpdateAnimationAndMove() // Added parentheses here
@@ -134,6 +197,9 @@ public class PlayerMovement : MonoBehaviour
 
     void MoveCharacter()
     {
-        myRigidbody.AddForce(moveDirection, ForceMode.Force);
+        if(!isSwinging)
+        {
+            myRigidbody.AddForce(moveDirection, ForceMode.Force);
+        }
     }
 }
