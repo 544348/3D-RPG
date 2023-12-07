@@ -41,8 +41,8 @@ public class PlayerMovement : MonoBehaviour
        // transform.position = startingPosition.initialValue;
         coinsValue = GameObject.Find("Valueofcoin").GetComponent<TextMeshProUGUI>();
         baseSpeed = speed;
-      //  shop = GameObject.Find("Shop");
-       // shop.SetActive(false);
+        shop = GameObject.Find("ShopMenu");
+        shop.SetActive(false);
     }
 
     private void RopeSwing(GameObject Rope)
@@ -82,9 +82,10 @@ public class PlayerMovement : MonoBehaviour
             Object.Destroy(collision.gameObject);
             coinsValue.text = coins.ToString();
         }
-        if(collision.gameObject.tag == "shopkeeper")
+        if(collision.gameObject.tag == "shop")
         {
             shop.SetActive(true);
+            Cursor.lockState = CursorLockMode.None;
         }
     }
     private void OnTriggerEnter(Collider other)
