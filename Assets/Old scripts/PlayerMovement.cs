@@ -43,6 +43,7 @@ public class PlayerMovement : MonoBehaviour
         baseSpeed = speed;
         shop = GameObject.Find("ShopMenu");
         shop.SetActive(false);
+        gameObject.transform.position = respawnPoint.transform.position;
     }
 
     private void RopeSwing(GameObject Rope)
@@ -76,12 +77,7 @@ public class PlayerMovement : MonoBehaviour
     }
     private void OnCollisionEnter(Collision collision)
     {
-        if(collision.gameObject.tag == "coin")
-        {
-            coins++;
-            Object.Destroy(collision.gameObject);
-            coinsValue.text = coins.ToString();
-        }
+
         if(collision.gameObject.tag == "shop")
         {
             shop.SetActive(true);
@@ -97,6 +93,12 @@ public class PlayerMovement : MonoBehaviour
         if(other.gameObject.tag == ("killPlane"))
         {
             gameObject.transform.position = respawnPoint.transform.position;
+        }
+        if (other.gameObject.tag == "coin")
+        {
+            coins++;
+            Object.Destroy(other.gameObject);
+            coinsValue.text = coins.ToString();
         }
     }
     void groundCheck()

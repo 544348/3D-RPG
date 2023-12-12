@@ -7,6 +7,14 @@ TagManager:
   - ground
   - Ground
   - coin
+  - ItemName
+  - ItemValue
+  - item
+  - BuyButton
+  - Rope
+  - shop
+  - Coin
+  - killPlane
   layers:
   - Default
   - TransparentFX
@@ -14,7 +22,7 @@ TagManager:
   - Ground
   - Water
   - UI
-  - 
+  - postprocessing
   - 
   - 
   - 
